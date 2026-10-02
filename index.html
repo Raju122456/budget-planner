@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Simple personal budget planner for tracking income, expenses, savings goals and spending patterns.">
+  <title>Budget Planner</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">₹</div>
+      <div>
+        <h1>Budget Planner</h1>
+        <p>Track • Plan • Save</p>
+      </div>
+    </div>
+    <button id="clearDataBtn" class="btn btn-danger btn-small">Clear All Data</button>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">PERSONAL FINANCE DASHBOARD</p>
+        <h2>Know where your money goes.</h2>
+        <p>Add your income and expenses, set a savings goal, and monitor your monthly spending in one place.</p>
+      </div>
+      <div class="month-box">
+        <label for="monthFilter">Viewing month</label>
+        <input type="month" id="monthFilter">
+      </div>
+    </section>
+
+    <section id="alertBox" class="alert hidden"></section>
+
+    <section class="summary-grid">
+      <article class="summary-card income-card">
+        <span>Total Income</span>
+        <strong id="totalIncome">₹0.00</strong>
+        <small>Selected month</small>
+      </article>
+      <article class="summary-card expense-card">
+        <span>Total Expenses</span>
+        <strong id="totalExpense">₹0.00</strong>
+        <small>Selected month</small>
+      </article>
+      <article class="summary-card balance-card">
+        <span>Balance</span>
+        <strong id="balance">₹0.00</strong>
+        <small>Income − expenses</small>
+      </article>
+      <article class="summary-card saving-card">
+        <span>Savings Rate</span>
+        <strong id="savingRate">0%</strong>
+        <small>Based on selected month</small>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">ADD TRANSACTION</p>
+            <h3>Income or Expense</h3>
+          </div>
+        </div>
+
+        <form id="transactionForm" class="form-grid">
+          <div class="field">
+            <label for="transactionType">Type</label>
+            <select id="transactionType" required>
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="amount">Amount (₹)</label>
+            <input id="amount" type="number" min="0.01" step="0.01" placeholder="500" required>
+          </div>
+
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category" required>
+              <option>Food</option>
+              <option>Transport</option>
+              <option>Education</option>
+              <option>Bills</option>
+              <option>Shopping</option>
+              <option>Entertainment</option>
+              <option>Health</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="transactionDate">Date</label>
+            <input id="transactionDate" type="date" required>
+          </div>
+
+          <div class="field field-wide">
+            <label for="note">Note</label>
+            <input id="note" type="text" maxlength="80" placeholder="e.g. Monthly groceries">
+          </div>
+
+          <button class="btn btn-primary field-wide" type="submit">+ Add Transaction</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">SAVINGS GOAL</p>
+            <h3>Set your target</h3>
+          </div>
+        </div>
+
+        <form id="goalForm">
+          <div class="field">
+            <label for="goalName">Goal name</label>
+            <input id="goalName" type="text" maxlength="50" placeholder="New laptop" required>
+          </div>
+          <div class="field">
+            <label for="goalTarget">Target amount (₹)</label>
+            <input id="goalTarget" type="number" min="1" step="0.01" placeholder="50000" required>
+          </div>
+          <div class="field">
+            <label for="goalSaved">Already saved (₹)</label>
+            <input id="goalSaved" type="number" min="0" step="0.01" placeholder="10000" required>
+          </div>
+          <button class="btn btn-secondary" type="submit">Save Goal</button>
+        </form>
+
+        <div id="goalDisplay" class="goal-display hidden">
+          <div class="goal-title-row">
+            <strong id="goalTitle">Goal</strong>
+            <span id="goalPercent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div id="goalProgress" class="progress-bar"></div>
+          </div>
+          <p id="goalNumbers">₹0 saved of ₹0</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="charts-grid">
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">SPENDING PATTERN</p>
+            <h3>Expenses by category</h3>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </article>
+
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">MONTHLY VIEW</p>
+            <h3>Income vs Expenses</h3>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="monthlyChart"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading transaction-heading">
+        <div>
+          <p class="section-label">TRANSACTION HISTORY</p>
+          <h3>Recent transactions</h3>
+        </div>
+        <button id="exportBtn" class="btn btn-outline btn-small">Export CSV</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>Note</th>
+              <th>Amount</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="transactionTable"></tbody>
+        </table>
+        <p id="emptyState" class="empty-state">No transactions for this month yet.</p>
+      </div>
+    </section>
+
+    <section class="monthly-note">
+      <strong>Monthly summary:</strong>
+      <span id="monthlySummary">Add transactions to see your summary.</span>
+    </section>
+  </main>
+
+  <footer>
+    <p>Budget Planner • Demo project • Data is stored only in this browser.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
